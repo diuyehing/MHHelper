@@ -1,6 +1,6 @@
 ﻿namespace MHSucker
 {
-    partial class MainForm
+    partial class MainWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -44,7 +44,6 @@
             this.LogTextBox.ReadOnly = true;
             this.LogTextBox.Size = new System.Drawing.Size(458, 100);
             this.LogTextBox.TabIndex = 0;
-            this.LogTextBox.TextChanged += new System.EventHandler(this.LogTextBox_TextChanged);
             // 
             // groupBox1
             // 
@@ -56,14 +55,14 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Log";
             // 
-            // MainForm
+            // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(494, 331);
             this.Controls.Add(this.groupBox1);
-            this.Name = "MainForm";
+            this.Name = "MainWindow";
             this.Text = "MHSucker";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

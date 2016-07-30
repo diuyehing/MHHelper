@@ -11,27 +11,58 @@ using System.Threading;
 
 namespace MHSucker
 {
-    public partial class MainForm : Form
+    public partial class MainWindow : Form
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private bool logWatching = true;
-        private log4net.Appender.MemoryAppender logger;
-        private Thread logWatcher;
-
-        public MainForm()
+        public MainWindow()
         {
             InitializeComponent();
 
-            this.Closing += new CancelEventHandler(MainFormClosing);
-            logger = new log4net.Appender.MemoryAppender();
+            InitializeLogger();
+            this.Closing += new CancelEventHandler(UninitializeLogger);
 
-            log4net.Config.BasicConfigurator.Configure(logger);
-
-            logWatcher = new Thread(new ThreadStart(LogWatcher));
-            logWatcher.Start();
+            log.Error("test");
         }
 
-        void MainFormClosing(object sender, CancelEventArgs e)
+        #region Log System
+
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private bool logWatching = true;
+        private Thread logWatcher;
+        private log4net.Appender.MemoryAppender memoryAppender;
+        private log4net.Appender.RollingFileAppender rollingFileAppender;
+
+        private void InitializeLogger()
+        {
+            try
+            {
+                log4net.Layout.PatternLayout layout = new log4net.Layout.PatternLayout("%date %-5level - %message%newline");
+
+                memoryAppender = new log4net.Appender.MemoryAppender();
+                memoryAppender.Name = "MyMemoryAppender";
+                memoryAppender.Layout = layout;
+
+                rollingFileAppender = new log4net.Appender.RollingFileAppender();
+                rollingFileAppender.Name = "MyRollingFileAppender";
+                rollingFileAppender.File = "logs";
+                rollingFileAppender.MaxSizeRollBackups = 100;
+                rollingFileAppender.AppendToFile = true;
+                rollingFileAppender.StaticLogFileName = false;
+                rollingFileAppender.DatePattern = "yyyyMMdd";
+                rollingFileAppender.RollingStyle = log4net.Appender.RollingFileAppender.RollingMode.Date;
+                rollingFileAppender.Layout = layout;
+
+                log4net.Config.BasicConfigurator.Configure(memoryAppender, rollingFileAppender);
+
+                logWatcher = new Thread(new ThreadStart(LogWatcher));
+                logWatcher.Start();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        private void UninitializeLogger(object sender, CancelEventArgs e)
         {
             logWatching = false;
             logWatcher.Join();
@@ -70,18 +101,20 @@ namespace MHSucker
         {
             while (logWatching)
             {
-                log4net.Core.LoggingEvent[] events = logger.GetEvents();
-                logger.Clear();
+                log4net.Core.LoggingEvent[] events = memoryAppender.GetEvents();
+                memoryAppender.Clear();
                 if (events != null && events.Length > 0)
                 {
                     foreach (log4net.Core.LoggingEvent ev in events)
                     {
-                        string line = ev.LoggerName + ": " + ev.RenderedMessage + "\r\n";
+                        string line = ev.RenderedMessage + "\r\n";
                         AppendLog(line);
                     }
                 }
                 Thread.Sleep(500);
             }
         }
+
+        #endregion
     }
 }
